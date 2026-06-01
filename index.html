@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ========== METADATA: Content management & SEO awareness ========== -->
+    <meta name="description" content="UiTM Student Attendance Management System for IMS566 - Advanced Web Design Development & Content Management">
+    <meta name="keywords" content="UiTM, attendance, IMS566, student portal, web design, content management, Faris Aiman">
+    <meta name="author" content="Faris Aiman">
+    
+    <title>UiTM Student Attendance System - IMS566</title>
+    
+    <!-- ========== EXTERNAL LIBRARIES ========== -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- ========== TAILWIND CONFIGURATION ========== -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- ========== CUSTOM STYLES ========== -->
+    <style>
+        /* ========== CSS Variables & Root ========== */
+        :root {
+            --bg: #0c0a0f;
+            --bg-secondary: #13111a;
+            --bg-card: #1a1723;
+            --bg-hover: #231f30;
+            --fg: #ece8f0;
+            --fg-muted: #847a8e;
+            --accent: #c2185b;
+            --accent-hover: #e91a63;
+            --accent-dim: rgba(194, 24, 91, 0.12);
+            --accent-glow: rgba(194, 24, 91, 0.25);
+            --uitm-maroon: #7a1b3e;
+            --uitm-gold: #d4a843;
+            --success: #34d399;
+            --danger: #f87171;
+            --warning: #fbbf24;
+            --info: #818cf8;
+            --border: #2a2535;
+        }
+
+        /* ========== Base Reset & Body ========== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            overflow-x: hidden;
+        }
+
+        /* ========== Custom Scrollbar ========== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+        /* ========== Backgrounds & Orbs ========== */
+        .auth-bg {
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(194, 24, 91, 0.1) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, rgba(122, 27, 62, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(212, 168, 67, 0.03) 0%, transparent 60%),
+                var(--bg);
+        }
+
+        .bg-grid {
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(194, 24, 91, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(194, 24, 91, 0.02) 0%, transparent 40%),
+                linear-gradient(rgba(42, 37, 53, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(42, 37, 53, 0.3) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            animation: orbFloat 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .orb-1 { width: 350px; height: 350px; background: rgba(194, 24, 91, 0.08); top: 5%; left: 5%; }
+        .orb-2 { width: 250px; height: 250px; background: rgba(122, 27, 62, 0.06); bottom: 15%; right: 10%; animation-delay: -4s; }
+        .orb-3 { width: 200px; height: 200px; background: rgba(212, 168, 67, 0.05); top: 50%; left: 60%; animation-delay: -7s; }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(25px, -20px) scale(1.05); }
+            66% { transform: translate(-15px, 18px) scale(0.95); }
+        }
+
+        /* ========== Sidebar ========== */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            transition: width 0.3s ease, left 0.3s ease;
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s ease;
+            color: var(--fg-muted); font-weight: 500;
+            position: relative; overflow: hidden;
+        }
+        .nav-item::before {
+            content: ''; position: absolute; left: 0; top: 0;
+            width: 3px; height: 100%; background: var(--accent);
+            border-radius: 0 3px 3px 0; transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        .nav-item:hover { background: var(--bg-hover); color: var(--fg); }
+        .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+        .nav-item.active::before { transform: scaleY(1); }
+
+        /* ========== Cards & Stats ========== */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px; transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: rgba(194, 24, 91, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card { position: relative; overflow: hidden; }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .stat-card .stat-glow {
+            position: absolute; width: 120px; height: 120px;
+            border-radius: 50%; filter: blur(50px);
+            top: -30px; right: -30px; pointer-events: none;
+        }
+
+        /* ========== Tables ========== */
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .data-table thead th {
+            padding: 14px 16px; text-align: left; font-size: 12px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--fg-muted); border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary); position: sticky; top: 0; z-index: 5;
+        }
+        .data-table tbody tr { transition: background 0.15s ease; }
+        .data-table tbody tr:hover { background: var(--bg-hover); }
+        .data-table tbody td {
+            padding: 14px 16px; border-bottom: 1px solid rgba(42, 37, 53, 0.5); font-size: 14px;
+        }
+
+        /* ========== Badges ========== */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+        .badge-present { background: rgba(52, 211, 153, 0.12); color: #34d399; }
+        .badge-absent { background: rgba(248, 113, 113, 0.12); color: #f87171; }
+        .badge-late { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
+
+        /* ========== Forms & Inputs ========== */
+        .input-field {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 16px; color: var(--fg);
+            font-size: 14px; width: 100%; transition: all 0.2s ease;
+            outline: none; font-family: 'DM Sans', sans-serif;
+        }
+        .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+        .input-field::placeholder { color: var(--fg-muted); }
+        .input-field.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(248,113,113,0.12); }
+
+        .field-error { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+        .field-error.show { display: block; }
+
+        /* ========== Buttons ========== */
+        .btn-primary {
+            background: var(--accent); color: white; font-weight: 600;
+            padding: 12px 24px; border-radius: 10px; border: none;
+            cursor: pointer; font-size: 14px; transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover); transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-secondary {
+            background: var(--bg-hover); color: var(--fg); font-weight: 500;
+            padding: 10px 20px; border-radius: 10px; border: 1px solid var(--border);
+            cursor: pointer; font-size: 14px; transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary:hover { background: var(--border); border-color: var(--fg-muted); }
+
+        .btn-danger {
+            background: rgba(248, 113, 113, 0.12); color: #f87171;
+            font-weight: 500; padding: 8px 14px; border-radius: 8px;
+            border: 1px solid rgba(248, 113, 113, 0.2); cursor: pointer;
+            font-size: 13px; transition: all 0.2s ease; font-family: 'DM Sans', sans-serif;
+        }
+        .btn-danger:hover { background: rgba(248, 113, 113, 0.2); }
+
+        /* ========== Toast Notifications ========== */
+        .toast-container {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+            animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); min-width: 280px;
+        }
+        .toast-success { background: #065f46; color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); }
+        .toast-error { background: #7f1d1d; color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); }
+        .toast-info { background: #1e1e3f; color: #c4b5fd; border: 1px solid rgba(129,140,248,0.3); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; } to { opacity: 0; transform: translateX(40px); }
+        }
+
+        /* ========== Modals ========== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 32px; max-width: 500px; width: 90%;
+            animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ========== Attendance Buttons ========== */
+        .att-btn {
+            padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .att-present { background: rgba(52,211,153,0.12); color: #34d399; border-color: rgba(52,211,153,0.2); }
+        .att-present:hover, .att-present.selected { background: #34d399; color: #0c0a0f; }
+        .att-absent { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.2); }
+        .att-absent:hover, .att-absent.selected { background: #f87171; color: #0c0a0f; }
+        .att-late { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+        .att-late:hover, .att-late.selected { background: #fbbf24; color: #0c0a0f; }
+
+        /* ========== Utility Elements ========== */
+        .avatar {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; flex-shrink: 0;
+        }
+
+        .pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--success); position: relative;
+        }
+        .pulse-dot::after {
+            content: ''; position: absolute; inset: -4px; border-radius: 50%;
+            border: 2px solid var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .page { display: none; animation: pageIn 0.4s cubic-bezier(0.16,1,0.3,1); }
+        .page.active { display: block; }
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-check {
+            appearance: none; width: 18px; height: 18px;
+            border: 2px solid var(--border); border-radius: 5px;
+            cursor: pointer; transition: all 0.15s ease; position: relative;
+        }
+        .custom-check:checked { background: var(--accent); border-color: var(--accent); }
+        .custom-check:checked::after {
+            content: '\2713'; position: absolute; top: -1px; left: 2px;
+            font-size: 12px; color: white; font-weight: 700;
+        }
+
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23847a8e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .uitm-shield {
+            width: 56px; height: 56px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--accent), var(--uitm-maroon));
+            box-shadow: 0 4px 20px var(--accent-glow);
+            position: relative;
+        }
+        .uitm-shield::after {
+            content: ''; position: absolute; inset: -2px; border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--uitm-gold));
+            z-index: -1; opacity: 0.3;
+        }
+
+        .uitm-crest {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--accent), var(--uitm-maroon));
+        }
+
+        .auth-page { display: none; }
+        .auth-page.active { display: flex; }
+
+        .strength-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-top: 6px; }
+        .strength-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; width: 0%; }
+
+        .step-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: all 0.3s ease; }
+        .step-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+        .step-dot.done { background: var(--success); }
+
+        .admin-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;
+            background: rgba(212,168,67,0.15); color: var(--uitm-gold);
+            border: 1px solid rgba(212,168,67,0.25);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        /* ========== Responsive Design ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -260px; z-index: 100;
+                transition: left 0.3s ease; height: 100vh;
+            }
+            .sidebar.open { left: 0; }
+            .mobile-overlay {
+                position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+                z-index: 99; display: none;
+            }
+            .mobile-overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== TOAST NOTIFICATION CONTAINER ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===================== AUTHENTICATION PAGES ===================== -->
+    <div id="authContainer">
+        <!-- ========== LOGIN PAGE ========== -->
+        <div id="loginPage" class="auth-page active auth-bg min-h-screen items-center justify-center relative overflow-hidden">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+
+            <div class="relative z-10 w-full max-w-md px-6">
+                <div class="text-center mb-8">
+                    <div class="uitm-shield mx-auto mb-5">
+                        <i class="fa-solid fa-building-columns text-2xl text-white"></i>
+                    </div>
+                    <h1 class="font-display text-2xl font-bold mb-1">Universiti Teknologi MARA</h1>
+                    <p class="text-sm" style="color: var(--fg-muted);">Student Attendance Management System</p>
+                    <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: var(--accent-dim); color: var(--accent);">IMS566</span>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: rgba(212,168,67,0.12); color: var(--uitm-gold);">Semester 4 2026</span>
+                    </div>
+                    <p class="text-xs mt-2" style="color: var(--fg-muted);">Advanced Web Design Development &amp; Content Management</p>
+                </div>
+
+                <div class="card" style="padding: 32px;">
+                    <h2 class="font-display text-xl font-semibold mb-6">Admin Sign In</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2" style="color: var(--fg-muted);">Username</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-user-shield absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                <input type="text" id="loginUser" class="input-field" style="padding-left: 40px;" placeholder="Enter admin username" value="admin">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2" style="color: var(--fg-muted);">Password</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                <input type="password" id="loginPass" class="input-field" style="padding-left: 40px;" placeholder="Enter password" value="admin123">
+                                <button onclick="togglePass('loginPass','loginEye')" class="absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--fg-muted); background:none; border:none; cursor:pointer;">
+                                    <i class="fa-solid fa-eye" id="loginEye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer text-sm" style="color: var(--fg-muted);">
+                                <input type="checkbox" class="custom-check" checked> Remember me
+                            </label>
+                            <a href="#" class="text-sm font-medium" style="color: var(--accent);" onclick="event.preventDefault(); showToast('Please contact IT admin at admin@uitm.edu.my', 'info')">Forgot password?</a>
+                        </div>
+                        <button onclick="handleLogin()" class="btn-primary w-full justify-center text-base" style="padding: 14px;">
+                            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                        </button>
+                    </div>
+
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full" style="border-top: 1px solid var(--border);"></div></div>
+                        <div class="relative flex justify-center"><span class="px-3 text-xs" style="background: var(--bg-card); color: var(--fg-muted);">or</span></div>
+                    </div>
+
+                    <p class="text-center text-sm" style="color: var(--fg-muted);">
+                        New student?
+                        <a href="#" class="font-semibold" style="color: var(--accent);" onclick="event.preventDefault(); switchAuth('signup')">Register Account</a>
+                    </p>
+                </div>
+
+                <p class="text-center text-xs mt-6" style="color: var(--fg-muted);">
+                    Admin credentials: <strong style="color:var(--fg);">admin</strong> / <strong style="color:var(--fg);">admin123</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- ========== SIGN UP PAGE ========== -->
+        <div id="signupPage" class="auth-page auth-bg min-h-screen items-center justify-center relative overflow-hidden">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+
+            <div class="relative z-10 w-full max-w-md px-6">
+                <div class="text-center mb-6">
+                    <div class="uitm-shield mx-auto mb-4">
+                        <i class="fa-solid fa-building-columns text-2xl text-white"></i>
+                    </div>
+                    <h1 class="font-display text-2xl font-bold mb-1">Student Registration</h1>
+                    <p class="text-sm" style="color: var(--fg-muted);">Register for IMS566 attendance system</p>
+                </div>
+
+                <div class="flex items-center justify-center gap-3 mb-6">
+                    <div class="step-dot active" id="step1Dot"></div>
+                    <div class="w-8 h-px" style="background: var(--border);"></div>
+                    <div class="step-dot" id="step2Dot"></div>
+                    <div class="w-8 h-px" style="background: var(--border);"></div>
+                    <div class="step-dot" id="step3Dot"></div>
+                </div>
+
+                <div class="card" style="padding: 28px;">
+                    <!-- Step 1: Student Information -->
+                    <div id="signupStep1" class="signup-step">
+                        <h3 class="font-display font-semibold mb-1">Student Information</h3>
+                        <p class="text-xs mb-5" style="color: var(--fg-muted);">Enter your UiTM student details</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Full Name <span style="color: var(--danger);">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="text" id="signupName" class="input-field" style="padding-left: 40px;" placeholder="e.g. AHMAD FARHAN BIN ISMAIL" oninput="this.value = this.value.toUpperCase()">
+                                </div>
+                                <p class="field-error" id="nameError">Please enter your full name</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Student ID <span style="color: var(--danger);">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="text" id="signupId" class="input-field" style="padding-left: 40px;" placeholder="2025XXXXXX" maxlength="10" oninput="validateStudentIdLive(this)">
+                                </div>
+                                <p class="field-error" id="idError">Student ID must start with 2025 and be 10 digits</p>
+                                <p class="text-xs mt-1" style="color: var(--fg-muted);">Format: 2025 + 6 digits (e.g. 2025812345)</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Course</label>
+                                <div class="input-field flex items-center gap-2" style="cursor: default;">
+                                    <i class="fa-solid fa-code text-sm" style="color: var(--accent);"></i>
+                                    <span class="font-semibold text-sm" style="color: var(--accent);">IMS566</span>
+                                    <span class="text-xs" style="color: var(--fg-muted);">- Adv. Web Design &amp; CMS</span>
+                                </div>
+                            </div>
+                            <button onclick="goToSignupStep(2)" class="btn-primary w-full justify-center" style="padding: 14px; margin-top: 8px;">
+                                Continue <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Account Setup -->
+                    <div id="signupStep2" class="signup-step" style="display:none;">
+                        <h3 class="font-display font-semibold mb-1">Account Setup</h3>
+                        <p class="text-xs mb-5" style="color: var(--fg-muted);">Set up your contact and password</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">UiTM Email <span style="color: var(--danger);">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="email" id="signupEmail" class="input-field" style="padding-left: 40px;" placeholder="student@uitm.edu.my">
+                                </div>
+                                <p class="field-error" id="emailError">Please enter a valid email address</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Phone Number</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="tel" id="signupPhone" class="input-field" style="padding-left: 40px;" placeholder="01XXXXXXXX" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Password <span style="color: var(--danger);">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="password" id="signupPass" class="input-field" style="padding-left: 40px; padding-right: 40px;" placeholder="Create a password" oninput="updatePasswordStrength(this.value)">
+                                    <button onclick="togglePass('signupPass','signupEye')" class="absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--fg-muted); background:none; border:none; cursor:pointer;">
+                                        <i class="fa-solid fa-eye" id="signupEye"></i>
+                                    </button>
+                                </div>
+                                <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                                <p class="text-xs mt-1" style="color: var(--fg-muted);" id="strengthText">Minimum 6 characters</p>
+                                <p class="field-error" id="passError">Password must be at least 6 characters</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Confirm Password <span style="color: var(--danger);">*</span></label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                    <input type="password" id="signupConfirm" class="input-field" style="padding-left: 40px;" placeholder="Re-enter password">
+                                </div>
+                                <p class="field-error" id="confirmError">Passwords do not match</p>
+                            </div>
+                            <div class="flex gap-3" style="margin-top: 8px;">
+                                <button onclick="goToSignupStep(1)" class="btn-secondary flex-1 justify-center">
+                                    <i class="fa-solid fa-arrow-left"></i> Back
+                                </button>
+                                <button onclick="goToSignupStep(3)" class="btn-primary flex-1 justify-center">
+                                    Continue <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Review & Confirm -->
+                    <div id="signupStep3" class="signup-step" style="display:none;">
+                        <h3 class="font-display font-semibold mb-1">Review &amp; Confirm</h3>
+                        <p class="text-xs mb-5" style="color: var(--fg-muted);">Verify your registration details</p>
+
+                        <div class="space-y-3 mb-5" id="reviewDetails"></div>
+
+                        <label class="flex items-start gap-2 cursor-pointer mb-5" style="color: var(--fg-muted);">
+                            <input type="checkbox" class="custom-check mt-0.5" id="agreeTerms">
+                            <span class="text-xs">I confirm that the information provided is accurate and I agree to the UiTM Student Attendance System terms and conditions.</span>
+                        </label>
+                        <p class="field-error" id="termsError">You must agree to the terms</p>
+
+                        <div class="flex gap-3">
+                            <button onclick="goToSignupStep(2)" class="btn-secondary flex-1 justify-center">
+                                <i class="fa-solid fa-arrow-left"></i> Back
+                            </button>
+                            <button onclick="handleSignup()" class="btn-primary flex-1 justify-center">
+                                <i class="fa-solid fa-user-plus"></i> Register
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative my-5">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full" style="border-top: 1px solid var(--border);"></div></div>
+                        <div class="relative flex justify-center"><span class="px-3 text-xs" style="background: var(--bg-card); color: var(--fg-muted);">or</span></div>
+                    </div>
+
+                    <p class="text-center text-sm" style="color: var(--fg-muted);">
+                        Already have an account?
+                        <a href="#" class="font-semibold" style="color: var(--accent);" onclick="event.preventDefault(); switchAuth('login')">Sign In</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MAIN APPLICATION ===================== -->
+    <div id="mainApp" class="hidden min-h-screen flex">
+        <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+        <!-- ========== SIDEBAR NAVIGATION ========== -->
+        <aside class="sidebar w-64 flex-shrink-0 flex flex-col h-screen sticky top-0" id="sidebar">
+            <div class="p-5 flex items-center gap-3">
+                <div class="uitm-crest">
+                    <i class="fa-solid fa-building-columns text-white text-sm"></i>
+                </div>
+                <div>
+                    <h2 class="font-display font-bold text-sm" style="color: var(--fg);">UiTM Attendance</h2>
+                    <p class="text-xs" style="color: var(--fg-muted);">IMS566 - Faris Aiman</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-1">
+                <div class="text-xs font-semibold uppercase tracking-wider px-3 mb-3" style="color: var(--fg-muted);">Menu</div>
+                <div class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i><span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="attendance" onclick="navigateTo('attendance')">
+                    <i class="fa-solid fa-calendar-check w-5 text-center"></i><span>Attendance Records</span>
+                </div>
+                <div class="nav-item" data-page="students" onclick="navigateTo('students')">
+                    <i class="fa-solid fa-users w-5 text-center"></i><span>Student List</span>
+                </div>
+
+                <div class="text-xs font-semibold uppercase tracking-wider px-3 mb-3 mt-8" style="color: var(--fg-muted);">Settings</div>
+                <div class="nav-item" onclick="showToast('Settings page coming soon', 'info')">
+                    <i class="fa-solid fa-gear w-5 text-center"></i><span>Preferences</span>
+                </div>
+            </nav>
+
+            <div class="p-4 m-4 rounded-xl" style="background: var(--accent-dim); border: 1px solid rgba(194,24,91,0.15);">
+                <p class="text-xs font-medium mb-1" style="color: var(--accent);">IMS566</p>
+                <p class="text-xs" style="color: var(--fg-muted);">Adv. Web Design Development &amp; Content Management</p>
+            </div>
+
+            <div class="p-4 border-t" style="border-color: var(--border);">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm" style="background: linear-gradient(135deg, var(--accent), var(--uitm-maroon)); color: white;"><i class="fa-solid fa-user-shield text-xs"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm font-medium truncate" style="color: var(--fg);" id="sidebarUser">Admin</p>
+                            <span class="admin-badge">Admin</span>
+                        </div>
+                        <p class="text-xs truncate" style="color: var(--fg-muted);" id="sidebarEmail">admin@uitm.edu.my</p>
+                    </div>
+                    <button onclick="handleLogout()" style="color: var(--fg-muted); background:none; border:none; cursor:pointer;" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN CONTENT AREA ========== -->
+        <main class="flex-1 min-h-screen bg-grid flex flex-col">
+            <!-- ========== HEADER ========== -->
+            <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4" style="background: rgba(12,10,15,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden" onclick="toggleSidebar()" style="background:none; border:none; color: var(--fg); cursor:pointer; font-size: 20px;">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 class="font-display text-lg font-bold" id="pageTitle">Dashboard</h1>
+                        <p class="text-xs" style="color: var(--fg-muted);" id="pageSubtitle">Overview of attendance data</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg" style="background: var(--bg-card); border: 1px solid var(--border);">
+                        <i class="fa-solid fa-search text-xs" style="color: var(--fg-muted);"></i>
+                        <input type="text" placeholder="Search..." class="bg-transparent border-none outline-none text-sm" style="color: var(--fg); width: 140px;" id="globalSearch" oninput="handleGlobalSearch(this.value)">
+                    </div>
+                    <div class="relative">
+                        <button onclick="toggleNotif()" style="background: var(--bg-card); border: 1px solid var(--border); width:40px; height:40px; border-radius:10px; cursor:pointer; color: var(--fg); position:relative;">
+                            <i class="fa-solid fa-bell text-sm"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center font-bold" style="background: var(--danger); color: white; font-size:9px;" id="notifBadge">3</span>
+                        </button>
+                        <div id="notifDropdown" class="hidden absolute right-0 top-12 w-72 rounded-xl p-4 space-y-3" style="background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 100;">
+                            <p class="text-sm font-semibold">Notifications</p>
+                            <div class="flex gap-3 p-2 rounded-lg" style="background: var(--bg-hover);">
+                                <i class="fa-solid fa-circle-exclamation text-xs mt-1" style="color: var(--warning);"></i>
+                                <div><p class="text-xs font-medium">3 students absent today</p><p class="text-xs" style="color:var(--fg-muted);">2 min ago</p></div>
+                            </div>
+                            <div class="flex gap-3 p-2 rounded-lg" style="background: var(--bg-hover);">
+                                <i class="fa-solid fa-check-circle text-xs mt-1" style="color: var(--success);"></i>
+                                <div><p class="text-xs font-medium">IMS566 attendance submitted</p><p class="text-xs" style="color:var(--fg-muted);">1 hour ago</p></div>
+                            </div>
+                            <div class="flex gap-3 p-2 rounded-lg" style="background: var(--bg-hover);">
+                                <i class="fa-solid fa-user-plus text-xs mt-1" style="color: var(--info);"></i>
+                                <div><p class="text-xs font-medium">New student registered</p><p class="text-xs" style="color:var(--fg-muted);">3 hours ago</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="pulse-dot"></div>
+                        <span class="text-xs font-medium hidden sm:inline" style="color: var(--success);">Online</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-7xl mx-auto flex-1 w-full">
+                <!-- ========== DASHBOARD PAGE ========== -->
+                <div id="dashboardPage" class="page active">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: var(--accent-dim);">
+                                <i class="fa-solid fa-calendar-day" style="color: var(--accent);"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold" id="currentDate"></p>
+                                <p class="text-xs" style="color: var(--fg-muted);" id="currentDay"></p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(194,24,91,0.2);">
+                            <i class="fa-solid fa-code mr-1"></i> IMS566 - Adv. Web Design Dev. &amp; CMS
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="card stat-card">
+                            <div class="stat-glow" style="background: rgba(194,24,91,0.08);"></div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="stat-icon" style="background: var(--accent-dim);"><i class="fa-solid fa-users" style="color: var(--accent);"></i></div>
+                                <span class="text-xs font-medium px-2 py-1 rounded-md" style="background: rgba(52,211,153,0.12); color: var(--success);">Active</span>
+                            </div>
+                            <p class="text-2xl font-display font-bold" id="totalStudents">0</p>
+                            <p class="text-xs" style="color: var(--fg-muted);">Total Students</p>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-glow" style="background: rgba(52,211,153,0.08);"></div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="stat-icon" style="background: rgba(52,211,153,0.12);"><i class="fa-solid fa-check-circle" style="color: var(--success);"></i></div>
+                                <span class="text-xs font-medium px-2 py-1 rounded-md" style="background: rgba(52,211,153,0.12); color: var(--success);">Today</span>
+                            </div>
+                            <p class="text-2xl font-display font-bold" id="presentCount">0</p>
+                            <p class="text-xs" style="color: var(--fg-muted);">Present Today</p>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-glow" style="background: rgba(248,113,113,0.08);"></div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="stat-icon" style="background: rgba(248,113,113,0.12);"><i class="fa-solid fa-times-circle" style="color: var(--danger);"></i></div>
+                                <span class="text-xs font-medium px-2 py-1 rounded-md" style="background: rgba(248,113,113,0.12); color: var(--danger);">Alert</span>
+                            </div>
+                            <p class="text-2xl font-display font-bold" id="absentCount">0</p>
+                            <p class="text-xs" style="color: var(--fg-muted);">Absent Today</p>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-glow" style="background: rgba(212,168,67,0.08);"></div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="stat-icon" style="background: rgba(212,168,67,0.12);"><i class="fa-solid fa-percentage" style="color: var(--uitm-gold);"></i></div>
+                                <span class="text-xs font-medium px-2 py-1 rounded-md" style="background: rgba(212,168,67,0.12); color: var(--uitm-gold);">Avg</span>
+                            </div>
+                            <p class="text-2xl font-display font-bold" id="avgAttendance">0%</p>
+                            <p class="text-xs" style="color: var(--fg-muted);">Attendance Rate</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                        <div class="card lg:col-span-2">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-display font-semibold text-base">Attendance Percentage</h3>
+                                    <p class="text-xs" style="color: var(--fg-muted);">IMS566 monthly trend</p>
+                                </div>
+                                <select class="input-field" style="width:auto; padding:6px 30px 6px 10px; font-size:12px;" id="chartPeriod" onchange="updateMainChart()">
+                                    <option value="6">Last 6 Months</option>
+                                    <option value="12">Last 12 Months</option>
+                                </select>
+                            </div>
+                            <div style="height: 280px;"><canvas id="mainChart"></canvas></div>
+                        </div>
+                        <div class="card">
+                            <div class="mb-4">
+                                <h3 class="font-display font-semibold text-base">Today's Status</h3>
+                                <p class="text-xs" style="color: var(--fg-muted);">IMS566 breakdown</p>
+                            </div>
+                            <div style="height: 200px; display:flex; align-items:center; justify-content:center;">
+                                <canvas id="doughnutChart"></canvas>
+                            </div>
+                            <div class="flex justify-center gap-4 mt-4">
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background: var(--success);"></span><span class="text-xs" style="color:var(--fg-muted);">Present</span></div>
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background: var(--danger);"></span><span class="text-xs" style="color:var(--fg-muted);">Absent</span></div>
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background: var(--warning);"></span><span class="text-xs" style="color:var(--fg-muted);">Late</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="card">
+                            <h3 class="font-display font-semibold text-base mb-4">Recent Activity</h3>
+                            <div class="space-y-3" id="recentActivity"></div>
+                        </div>
+                        <div class="card">
+                            <h3 class="font-display font-semibold text-base mb-4">Low Attendance Alert</h3>
+                            <div class="space-y-3" id="lowAttendance"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== ATTENDANCE DATA VIEW PAGE ========== -->
+                <div id="attendancePage" class="page">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <input type="date" class="input-field" style="width: auto;" id="attDate" onchange="renderAttendanceTable()">
+                            <span class="text-xs font-semibold px-3 py-2 rounded-lg" style="background: var(--accent-dim); color: var(--accent);">IMS566</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary" onclick="markAllPresent()">
+                                <i class="fa-solid fa-check-double"></i> Mark All Present
+                            </button>
+                            <button class="btn-primary" onclick="saveAttendance()">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Records
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Student ID</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== STUDENT LIST DATA VIEW PAGE ========== -->
+                <div id="studentsPage" class="page">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="relative">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color: var(--fg-muted);"></i>
+                                <input type="text" placeholder="Search by name or ID..." class="input-field" style="padding-left: 36px; width: 260px;" id="studentSearch" oninput="renderStudentList()">
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="openStudentModal()">
+                            <i class="fa-solid fa-plus"></i> Add Student
+                        </button>
+                    </div>
+
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Student ID</th>
+                                        <th>Email</th>
+                                        <th>Attendance %</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== FOOTER (Content Management Requirement) ========== -->
+            <footer style="background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 24px 32px; margin-top: auto;">
+                <div class="max-w-7xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="uitm-crest" style="width:32px; height:32px;">
+                                    <i class="fa-solid fa-building-columns text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="font-display font-bold text-sm">UiTM Attendance System</p>
+                                    <p class="text-xs" style="color: var(--fg-muted);">IMS566</p>
+                                </div>
+                            </div>
+                            <p class="text-xs" style="color: var(--fg-muted);">Advanced Web Design Development &amp; Content Management — Semester MAC 2026 – AUGUST 2026</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold mb-2">Quick Links</p>
+                            <ul class="space-y-1">
+                                <li><a href="#" class="text-xs hover:underline" style="color: var(--fg-muted);" onclick="event.preventDefault(); navigateTo('dashboard')">Dashboard</a></li>
+                                <li><a href="#" class="text-xs hover:underline" style="color: var(--fg-muted);" onclick="event.preventDefault(); navigateTo('attendance')">Attendance Records</a></li>
+                                <li><a href="#" class="text-xs hover:underline" style="color: var(--fg-muted);" onclick="event.preventDefault(); navigateTo('students')">Student List</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold mb-2">Contact & Info</p>
+                            <p class="text-xs" style="color: var(--fg-muted);"><i class="fa-solid fa-user-graduate mr-1"></i> Developed by: MUHAMAD FARIS AIMAN BIN MOHAMAD ROSLI (2025480948)</p>
+                            <p class="text-xs" style="color: var(--fg-muted);"><i class="fa-solid fa-chalkboard-user mr-1"></i> Lecturer: TS. DR. MOHAMAD RAHIMI BIN MOHAMAD ROSMAN</p>
+                            <p class="text-xs" style="color: var(--fg-muted);"><i class="fa-solid fa-envelope mr-1"></i> admin@uitm.edu.my</p>
+                            <p class="text-xs" style="color: var(--fg-muted);"><i class="fa-solid fa-location-dot mr-1"></i> Faculty of Information Science, UiTM Machang, Kelantan</p>
+                        </div>
+                    </div>
+                    <div class="pt-4" style="border-top: 1px solid var(--border);">
+                        <p class="text-xs text-center" style="color: var(--fg-muted);">&copy; 2026 Universiti Teknologi MARA. All rights reserved. | IMS566 Faris Aiman INDIVIDUAL PROJECT</p>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- ========== MODALS CONTAINER ========== -->
+    <div id="modalContainer"></div>
+
+    <!-- ===================== JAVASCRIPT LOGIC ===================== -->
+    <script>
+    /* ============================
+       DATA STRUCTURES
+       ============================ */
+    const avatarColors = [
+        '#c2185b', '#34d399', '#f87171', '#818cf8', '#f472b6',
+        '#fb923c', '#2dd4bf', '#d4a843', '#60a5fa', '#a78bfa'
+    ];
+
+    /**
+     * Generates a consistent avatar color based on the student's name.
+     * @param {string} name - The student's name
+     * @returns {string} Hex color code
+     */
+    function getAvatarColor(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        return avatarColors[Math.abs(hash) % avatarColors.length];
+    }
+
+    /**
+     * Extracts initials from a student's name for avatars.
+     * @param {string} name - The student's name
+     * @returns {string} 2-letter initials
+     */
+    function getInitials(name) {
+        const parts = name.split(' ');
+        if (parts.length >= 3) {
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return parts.map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    // Main student dataset
+    let students = [
+        { id: 1, name: 'AHMAD FARHAN BIN ISMAIL', studentId: '2025812345', class: 'IMS566', email: 'farhan@uitm.edu.my', phone: '0123456789' },
+        { id: 2, name: 'SITI NUR AISHAH BINTI ABDUL RAHMAN', studentId: '2025812346', class: 'IMS566', email: 'aishah@uitm.edu.my', phone: '0123456790' },
+        { id: 3, name: 'MUHAMMAD HAZIM BIN ZULKIFLI', studentId: '2025812347', class: 'IMS566', email: 'hazim@uitm.edu.my', phone: '0123456791' },
+        { id: 4, name: 'NURUL IZZAH BINTI MOHD NOOR', studentId: '2025812348', class: 'IMS566', email: 'izzah@uitm.edu.my', phone: '0123456792' },
+        { id: 5, name: 'AMIR DANIAL BIN HAFIZ', studentId: '2025812349', class: 'IMS566', email: 'danial@uitm.edu.my', phone: '0123456793' },
+        { id: 6, name: 'PUTRI SAFIYA BINTI ABDULLAH', studentId: '2025812350', class: 'IMS566', email: 'safiya@uitm.edu.my', phone: '0123456794' },
+        { id: 7, name: 'MUHAMMAD AKMAL BIN ROSLAN', studentId: '2025812351', class: 'IMS566', email: 'akmal@uitm.edu.my', phone: '0123456795' },
+        { id: 8, name: 'FATIN NADHIRAH BINTI YUSOF', studentId: '2025812352', class: 'IMS566', email: 'nadhirah@uitm.edu.my', phone: '0123456796' },
+        { id: 9, name: 'IQBAL HAZIQ BIN SHAHRUL', studentId: '2025812353', class: 'IMS566', email: 'haziq@uitm.edu.my', phone: '0123456797' },
+        { id: 10, name: 'NUR AMIRA BINTI HASHIM', studentId: '2025812354', class: 'IMS566', email: 'amira@uitm.edu.my', phone: '0123456798' },
+        { id: 11, name: 'DANISH IRFAN BIN AZMI', studentId: '2025812355', class: 'IMS566', email: 'irfan@uitm.edu.my', phone: '0123456799' },
+        { id: 12, name: 'AINUL MARDHIAH BINTI KAMARUDDIN', studentId: '2025812356', class: 'IMS566', email: 'mardhiah@uitm.edu.my', phone: '0123456800' },
+        { id: 13, name: 'HAFIZ AZLAN BIN MOHD SALLEH', studentId: '2025812357', class: 'IMS566', email: 'azlan@uitm.edu.my', phone: '0123456801' },
+        { id: 14, name: 'SITI KHADIJAH BINTI OTHMAN', studentId: '2025812358', class: 'IMS566', email: 'khadijah@uitm.edu.my', phone: '0123456802' },
+        { id: 15, name: 'RAYYAN ARIFF BIN ABDUL MALIK', studentId: '2025812359', class: 'IMS566', email: 'rayyan@uitm.edu.my', phone: '0123456803' },
+        { id: 16, name: 'NABIHAH BINTI CHE YUSOFF', studentId: '2025812360', class: 'IMS566', email: 'nabihah@uitm.edu.my', phone: '0123456804' },
+        { id: 17, name: 'ZAID BIN ISKANDAR', studentId: '2025812361', class: 'IMS566', email: 'zaid@uitm.edu.my', phone: '0123456805' },
+        { id: 18, name: 'HUSNA BINTI MOHD FAUZI', studentId: '2025812362', class: 'IMS566', email: 'husna@uitm.edu.my', phone: '0123456806' },
+        { id: 19, name: 'LUQMAN HAKIM BIN RAMLI', studentId: '2025812363', class: 'IMS566', email: 'luqman@uitm.edu.my', phone: '0123456807' },
+        { id: 20, name: 'ZAHRAH BINTI AHMAD TARMIZI', studentId: '2025812364', class: 'IMS566', email: 'zahrah@uitm.edu.my', phone: '0123456808' },
+    ];
+
+    let nextStudentId = 21;
+    
+    // Stores attendance records by date -> studentId -> status
+    let attendanceRecords = {};
+
+    // Hardcoded Admin account (Authentication simulation requirement)
+    const adminAccount = {
+        username: 'admin',
+        password: 'admin123',
+        email: 'admin@uitm.edu.my',
+        name: 'System Administrator'
+    };
+
+    // Registered students via the sign-up form
+    let registeredStudents = [];
+
+    // Temporary state for current attendance page
+    let currentAttendance = {};
+
+    /* ============================
+       TOAST NOTIFICATION SYSTEM
+       ============================ */
+    /**
+     * Displays a temporary notification toast.
+     * @param {string} message - The message to display
+     * @param {string} type - 'success', 'error', or 'info'
+     */
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<i class="fa-solid ${iconMap[type]}"></i><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'toastOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    /* ============================
+       AUTHENTICATION MODULE
+       ============================ */
+    /**
+     * Switches between Login and Sign Up views.
+     * @param {string} page - 'login' or 'signup'
+     */
+    function switchAuth(page) {
+        document.getElementById('loginPage').classList.remove('active');
+        document.getElementById('signupPage').classList.remove('active');
+        document.getElementById(page + 'Page').classList.add('active');
+        if (page === 'signup') goToSignupStep(1);
+    }
+
+    /**
+     * Handles the login form submission.
+     * Validates against admin account and registered student accounts.
+     */
+    function handleLogin() {
+        const username = document.getElementById('loginUser').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+
+        if (!username || !pass) {
+            showToast('Please enter your username and password', 'error');
+            return;
+        }
+
+        // Check admin credentials
+        if (username === adminAccount.username && pass === adminAccount.password) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('sidebarUser').textContent = adminAccount.name;
+            document.getElementById('sidebarEmail').textContent = adminAccount.email;
+            initApp();
+            showToast('Selamat datang, ' + adminAccount.name + '!', 'success');
+            return;
+        }
+
+        // Check registered student credentials
+        const student = registeredStudents.find(u => u.studentId === username && u.password === pass);
+        if (student) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('sidebarUser').textContent = toTitleCase(student.name);
+            document.getElementById('sidebarEmail').textContent = student.email;
+            initApp();
+            showToast('Selamat datang, ' + toTitleCase(student.name) + '!', 'success');
+            return;
+        }
+
+        showToast('Invalid username or password', 'error');
+    }
+
+    /**
+     * Logs the user out and returns to the authentication screen.
+     */
+    function handleLogout() {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('authContainer').style.display = '';
+        document.getElementById('loginPage').classList.add('active');
+        document.getElementById('signupPage').classList.remove('active');
+        showToast('Logged out successfully', 'info');
+    }
+
+    /**
+     * Toggles password visibility in input fields.
+     * @param {string} inputId - ID of the password input
+     * @param {string} eyeId - ID of the eye icon
+     */
+    function togglePass(inputId, eyeId) {
+        const inp = document.getElementById(inputId);
+        const icon = document.getElementById(eyeId);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    }
+
+    /**
+     * Converts ALL CAPS Malay names to Title Case (keeping Bin/Binti standardized).
+     * @param {string} str - The name string
+     * @returns {string} Formatted name
+     */
+    function toTitleCase(str) {
+        return str.split(' ').map(w => {
+            if (w === 'BIN' || w === 'BINTI') return w.charAt(0) + w.slice(1).toLowerCase();
+            return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        }).join(' ');
+    }
+
+    // Allow login submission via Enter key
+    document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+    document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+
+    /* ============================
+       SIGN UP MODULE (Multi-step form)
+       ============================ */
+    /**
+     * Navigates between signup steps after validating the current step.
+     * @param {number} step - The target step number (1, 2, or 3)
+     */
+    function goToSignupStep(step) {
+        if (step === 2 && !validateSignupStep1()) return;
+        if (step === 3 && !validateSignupStep2()) return;
+
+        document.querySelectorAll('.signup-step').forEach(s => s.style.display = 'none');
+        document.getElementById('signupStep' + step).style.display = 'block';
+
+        document.getElementById('step1Dot').className = 'step-dot' + (step > 1 ? ' done' : step === 1 ? ' active' : '');
+        document.getElementById('step2Dot').className = 'step-dot' + (step > 2 ? ' done' : step === 2 ? ' active' : '');
+        document.getElementById('step3Dot').className = 'step-dot' + (step === 3 ? ' active' : '');
+
+        if (step === 3) populateReview();
+    }
+
+    /**
+     * Validates the first signup step (Name and Student ID).
+     * @returns {boolean} True if valid
+     */
+    function validateSignupStep1() {
+        const name = document.getElementById('signupName').value.trim();
+        const id = document.getElementById('signupId').value.trim();
+        let valid = true;
+
+        if (!name || name.length < 3) {
+            document.getElementById('signupName').classList.add('error');
+            document.getElementById('nameError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('signupName').classList.remove('error');
+            document.getElementById('nameError').classList.remove('show');
+        }
+
+        const idRegex = /^2025\d{6}$/;
+        if (!idRegex.test(id)) {
+            document.getElementById('signupId').classList.add('error');
+            document.getElementById('idError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('signupId').classList.remove('error');
+            document.getElementById('idError').classList.remove('show');
+        }
+
+        if (valid && students.find(s => s.studentId === id)) {
+            document.getElementById('signupId').classList.add('error');
+            document.getElementById('idError').textContent = 'This Student ID is already registered';
+            document.getElementById('idError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('idError').textContent = 'Student ID must start with 2025 and be 10 digits';
+        }
+
+        if (!valid) showToast('Please correct the errors above', 'error');
+        return valid;
+    }
+
+    /**
+     * Validates the second signup step (Email, Password, Confirm Password).
+     * @returns {boolean} True if valid
+     */
+    function validateSignupStep2() {
+        const email = document.getElementById('signupEmail').value.trim();
+        const pass = document.getElementById('signupPass').value;
+        const confirm = document.getElementById('signupConfirm').value;
+        let valid = true;
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            document.getElementById('signupEmail').classList.add('error');
+            document.getElementById('emailError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('signupEmail').classList.remove('error');
+            document.getElementById('emailError').classList.remove('show');
+        }
+
+        if (!pass || pass.length < 6) {
+            document.getElementById('signupPass').classList.add('error');
+            document.getElementById('passError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('signupPass').classList.remove('error');
+            document.getElementById('passError').classList.remove('show');
+        }
+
+        if (pass !== confirm) {
+            document.getElementById('signupConfirm').classList.add('error');
+            document.getElementById('confirmError').classList.add('show');
+            valid = false;
+        } else {
+            document.getElementById('signupConfirm').classList.remove('error');
+            document.getElementById('confirmError').classList.remove('show');
+        }
+
+        if (!valid) showToast('Please correct the errors above', 'error');
+        return valid;
+    }
+
+    /**
+     * Strips non-numeric characters from Student ID input live.
+     * @param {HTMLInputElement} input - The input element
+     */
+    function validateStudentIdLive(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    /**
+     * Updates the visual password strength indicator.
+     * @param {string} password - The password string to evaluate
+     */
+    function updatePasswordStrength(password) {
+        const fill = document.getElementById('strengthFill');
+        const text = document.getElementById('strengthText');
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+        const colors = ['transparent', '#f87171', '#f87171', '#fbbf24', '#34d399', '#34d399'];
+        const labels = ['Minimum 6 characters', 'Very weak', 'Weak', 'Fair', 'Strong', 'Very strong'];
+
+        fill.style.width = widths[strength];
+        fill.style.background = colors[strength];
+        text.textContent = labels[strength];
+        text.style.color = colors[strength] === 'transparent' ? 'var(--fg-muted)' : colors[strength];
+    }
+
+    /**
+     * Renders the review summary in Step 3 of the signup form.
+     */
+    function populateReview() {
+        const name = document.getElementById('signupName').value.trim();
+        const id = document.getElementById('signupId').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const phone = document.getElementById('signupPhone').value.trim();
+
+        document.getElementById('reviewDetails').innerHTML = `
+            <div class="p-3 rounded-lg" style="background: var(--bg-hover);">
+                <div class="flex items-center gap-3">
+                    <div class="avatar" style="background: ${getAvatarColor(name)}22; color: ${getAvatarColor(name)};">${getInitials(name)}</div>
+                    <div>
+                        <p class="text-sm font-semibold">${toTitleCase(name)}</p>
+                        <p class="text-xs" style="color: var(--fg-muted);">IMS566 Student</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 rounded-lg" style="background: var(--bg-hover);">
+                    <p class="text-xs" style="color: var(--fg-muted);">Student ID</p>
+                    <p class="text-sm font-semibold font-mono" style="color: var(--accent);">${id}</p>
+                </div>
+                <div class="p-3 rounded-lg" style="background: var(--bg-hover);">
+                    <p class="text-xs" style="color: var(--fg-muted);">Course</p>
+                    <p class="text-sm font-semibold" style="color: var(--uitm-gold);">IMS566</p>
+                </div>
+                <div class="p-3 rounded-lg" style="background: var(--bg-hover);">
+                    <p class="text-xs" style="color: var(--fg-muted);">Email</p>
+                    <p class="text-sm">${email}</p>
+                </div>
+                <div class="p-3 rounded-lg" style="background: var(--bg-hover);">
+                    <p class="text-xs" style="color: var(--fg-muted);">Phone</p>
+                    <p class="text-sm">${phone || 'Not provided'}</p>
+                </div>
+            </div>`;
+    }
+
+    /**
+     * Handles the final registration submission.
+     * Adds user to students array and registeredStudents array.
+     */
+    function handleSignup() {
+        const agree = document.getElementById('agreeTerms').checked;
+        if (!agree) {
+            document.getElementById('termsError').classList.add('show');
+            showToast('Please agree to the terms', 'error');
+            return;
+        }
+        document.getElementById('termsError').classList.remove('show');
+
+        const name = document.getElementById('signupName').value.trim().toUpperCase();
+        const id = document.getElementById('signupId').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const phone = document.getElementById('signupPhone').value.trim();
+        const pass = document.getElementById('signupPass').value;
+
+        students.push({
+            id: nextStudentId++,
+            name: name,
+            studentId: id,
+            class: 'IMS566',
+            email: email,
+            phone: phone
+        });
+
+        registeredStudents.push({
+            studentId: id,
+            password: pass,
+            name: name,
+            email: email
+        });
+
+        showToast('Pendaftaran berjaya! Account created successfully.', 'success');
+
+        // Reset form fields
+        document.getElementById('signupName').value = '';
+        document.getElementById('signupId').value = '';
+        document.getElementById('signupEmail').value = '';
+        document.getElementById('signupPhone').value = '';
+        document.getElementById('signupPass').value = '';
+        document.getElementById('signupConfirm').value = '';
+        document.getElementById('agreeTerms').checked = false;
+
+        setTimeout(() => {
+            switchAuth('login');
+            showToast('You can now sign in with your Student ID', 'info');
+        }, 1000);
+    }
+
+    /* ============================
+       NAVIGATION & ROUTING
+       ============================ */
+    const pageTitles = {
+        dashboard: ['Dashboard', 'IMS566 attendance overview'],
+        attendance: ['Attendance Records', 'Mark and manage daily attendance'],
+        students: ['Student List', 'Manage IMS566 enrolled students']
+    };
+
+    /**
+     * Navigates to a specific page and updates UI elements.
+     * @param {string} page - The page identifier ('dashboard', 'attendance', 'students')
+     */
+    function navigateTo(page) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.page === page);
+        });
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(page + 'Page');
+        if (targetPage) {
+            targetPage.classList.add('active');
+            targetPage.style.animation = 'none';
+            targetPage.offsetHeight; // trigger reflow
+            targetPage.style.animation = '';
+        }
+        if (pageTitles[page]) {
+            document.getElementById('pageTitle').textContent = pageTitles[page][0];
+            document.getElementById('pageSubtitle').textContent = pageTitles[page][1];
+        }
+        closeSidebar();
+        if (page === 'dashboard') updateDashboard();
+        if (page === 'attendance') renderAttendanceTable();
+        if (page === 'students') renderStudentList();
+    }
+
+    /** Toggles the mobile sidebar overlay */
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('mobileOverlay').classList.toggle('show');
+    }
+    
+    /** Closes the mobile sidebar overlay */
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('mobileOverlay').classList.remove('show');
+    }
+
+    /** Toggles the notification dropdown */
+    function toggleNotif() {
+        document.getElementById('notifDropdown').classList.toggle('hidden');
+    }
+    
+    // Close notification dropdown when clicking outside
+    document.addEventListener('click', e => {
+        const notif = document.getElementById('notifDropdown');
+        if (!e.target.closest('.relative') && notif) notif.classList.add('hidden');
+    });
+
+    /**
+     * Redirects global search to student list search.
+     * @param {string} query - The search query
+     */
+    function handleGlobalSearch(query) {
+        if (!query.trim()) return;
+        navigateTo('students');
+        document.getElementById('studentSearch').value = query;
+        renderStudentList();
+    }
+
+    /* ============================
+       HELPER FUNCTIONS
+       ============================ */
+    /**
+     * Calculates the overall attendance percentage for a specific student.
+     * @param {number} sid - The student's ID
+     * @returns {number} Attendance percentage (0-100)
+     */
+    function getStudentAttendancePercentage(sid) {
+        let total = 0, present = 0;
+        Object.keys(attendanceRecords).forEach(dateKey => {
+            const rec = attendanceRecords[dateKey][sid];
+            if (rec) { total++; if (rec === 'present' || rec === 'late') present++; }
+        });
+        return total > 0 ? Math.round((present / total) * 100) : 0;
+    }
+
+    /**
+     * Gets today's attendance summary statistics.
+     * @returns {Object} Object containing present, absent, late, total, unmarked counts
+     */
+    function getTodayStats() {
+        const todayKey = getTodayKey();
+        const todayRec = attendanceRecords[todayKey] || {};
+        let present = 0, absent = 0, late = 0;
+        students.forEach(s => {
+            const status = todayRec[s.id];
+            if (status === 'present') present++;
+            else if (status === 'absent') absent++;
+            else if (status === 'late') late++;
+        });
+        return { present, absent, late, total: students.length, unmarked: students.length - present - absent - late };
+    }
+
+    /** Formats a Date object to YYYY-MM-DD string */
+    function formatDateKey(date) {
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+    
+    /** Gets today's date formatted as YYYY-MM-DD */
+    function getTodayKey() { return formatDateKey(new Date()); }
+
+    /** Generates simulated historical attendance data for the past 30 days */
+    function generateHistoricalData() {
+        const today = new Date();
+        const statuses = ['present','present','present','present','present','absent','late'];
+        for (let d = 30; d >= 0; d--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - d);
+            if (date.getDay() === 0 || date.getDay() === 6) continue; // Skip weekends
+            const key = formatDateKey(date);
+            attendanceRecords[key] = {};
+            students.forEach(s => {
+                attendanceRecords[key][s.id] = statuses[Math.floor(Math.random() * statuses.length)];
+            });
+        }
+    }
+
+    /* ============================
+       DASHBOARD MODULE
+       ============================ */
+    let mainChartInstance = null;
+    let doughnutChartInstance = null;
+
+    /** Updates all dashboard elements, stats, and charts */
+    function updateDashboard() {
+        const now = new Date();
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('en-MY', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('currentDay').textContent = now.toLocaleDateString('en-MY', { weekday: 'long' });
+
+        const stats = getTodayStats();
+        document.getElementById('totalStudents').textContent = students.length;
+        document.getElementById('presentCount').textContent = stats.present;
+        document.getElementById('absentCount').textContent = stats.absent;
+
+        const avgPct = students.length > 0
+            ? Math.round(students.reduce((sum, s) => sum + getStudentAttendancePercentage(s.id), 0) / students.length)
+            : 0;
+        document.getElementById('avgAttendance').textContent = avgPct + '%';
+
+        updateMainChart();
+        updateDoughnutChart(stats);
+        renderRecentActivity();
+        renderLowAttendance();
+    }
+
+    /** Renders or updates the main line chart based on selected period */
+    function updateMainChart() {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const period = parseInt(document.getElementById('chartPeriod').value);
+        const now = new Date();
+        const labels = [];
+        const presentData = [];
+        const absentData = [];
+
+        for (let i = period - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(months[d.getMonth()] + ' ' + d.getFullYear());
+            let pCount = 0, aCount = 0;
+            Object.keys(attendanceRecords).forEach(dateKey => {
+                const date = new Date(dateKey);
+                if (date.getMonth() === d.getMonth() && date.getFullYear() === d.getFullYear()) {
+                    Object.values(attendanceRecords[dateKey]).forEach(v => {
+                        if (v === 'present' || v === 'late') pCount++;
+                        else if (v === 'absent') aCount++;
+                    });
+                }
+            });
+            const total = pCount + aCount;
+            presentData.push(total > 0 ? Math.round((pCount / total) * 100) : 0);
+            absentData.push(total > 0 ? Math.round((aCount / total) * 100) : 0);
+        }
+
+        if (mainChartInstance) mainChartInstance.destroy();
+        const ctx = document.getElementById('mainChart').getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(194, 24, 91, 0.25)');
+        gradient.addColorStop(1, 'rgba(194, 24, 91, 0.01)');
+
+        mainChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Attendance %',
+                        data: presentData,
+                        borderColor: '#c2185b',
+                        backgroundColor: gradient,
+                        fill: true, tension: 0.4,
+                        pointBackgroundColor: '#c2185b',
+                        pointBorderColor: '#0c0a0f',
+                        pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 7,
+                    },
+                    {
+                        label: 'Absence %',
+                        data: absentData,
+                        borderColor: '#f87171',
+                        backgroundColor: 'rgba(248,113,113,0.05)',
+                        fill: true, tension: 0.4,
+                        pointBackgroundColor: '#f87171',
+                        pointBorderColor: '#0c0a0f',
+                        pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6,
+                        borderDash: [5, 5],
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#847a8e', font: { family: 'DM Sans', size: 12 }, usePointStyle: true, pointStyle: 'circle' } },
+                    tooltip: {
+                        backgroundColor: '#1a1723', titleColor: '#ece8f0', bodyColor: '#847a8e',
+                        borderColor: '#2a2535', borderWidth: 1, padding: 12,
+                        titleFont: { family: 'Space Grotesk', weight: '600' }, bodyFont: { family: 'DM Sans' },
+                        callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '%' }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(42,37,53,0.5)', drawBorder: false }, ticks: { color: '#847a8e', font: { family: 'DM Sans', size: 11 }, callback: v => v + '%' } },
+                    x: { grid: { display: false }, ticks: { color: '#847a8e', font: { family: 'DM Sans', size: 11 } } }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+    }
+
+    /** Renders or updates the doughnut chart for today's status */
+    function updateDoughnutChart(stats) {
+        if (doughnutChartInstance) doughnutChartInstance.destroy();
+        const ctx = document.getElementById('doughnutChart').getContext('2d');
+        doughnutChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present','Absent','Late','Unmarked'],
+                datasets: [{ data: [stats.present, stats.absent, stats.late, Math.max(0, stats.unmarked)], backgroundColor: ['#34d399','#f87171','#fbbf24','#2a2535'], borderColor: '#1a1723', borderWidth: 3, hoverOffset: 6 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#1a1723', titleColor: '#ece8f0', bodyColor: '#847a8e', borderColor: '#2a2535', borderWidth: 1, padding: 10, titleFont: { family: 'Space Grotesk', weight: '600' }, bodyFont: { family: 'DM Sans' } }
+                }
+            }
+        });
+    }
+
+    /** Renders the recent activity feed on the dashboard */
+    function renderRecentActivity() {
+        const container = document.getElementById('recentActivity');
+        const dates = Object.keys(attendanceRecords).sort().reverse().slice(0, 5);
+        let html = '';
+        dates.forEach(dateKey => {
+            const rec = attendanceRecords[dateKey];
+            const pCount = Object.values(rec).filter(v => v === 'present').length;
+            const aCount = Object.values(rec).filter(v => v === 'absent').length;
+            const lCount = Object.values(rec).filter(v => v === 'late').length;
+            const date = new Date(dateKey);
+            const dayStr = date.toLocaleDateString('en-MY', { month: 'short', day: 'numeric' });
+            const total = pCount + aCount + lCount;
+            const pct = total > 0 ? Math.round((pCount + lCount) / total * 100) : 0;
+            html += `
+                <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-hover);">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background: var(--accent-dim);">
+                        <i class="fa-solid fa-calendar-check text-sm" style="color: var(--accent);"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">${dayStr} Records</p>
+                        <p class="text-xs" style="color: var(--fg-muted);">${pCount} hadir, ${aCount} tidak hadir, ${lCount} lewat</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold" style="color: ${pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'};">${pct}%</p>
+                    </div>
+                </div>`;
+        });
+        container.innerHTML = html || '<p style="color: var(--fg-muted);" class="text-sm text-center py-4">No recent activity</p>';
+    }
+
+    /** Renders the low attendance alert list on the dashboard */
+    function renderLowAttendance() {
+        const container = document.getElementById('lowAttendance');
+        const lowStudents = students
+            .map(s => ({ ...s, pct: getStudentAttendancePercentage(s.id) }))
+            .filter(s => s.pct < 75)
+            .sort((a, b) => a.pct - b.pct)
+            .slice(0, 5);
+
+        let html = '';
+        if (lowStudents.length === 0) {
+            html = '<div class="text-center py-6"><i class="fa-solid fa-circle-check text-2xl mb-2" style="color: var(--success);"></i><p class="text-sm" style="color: var(--fg-muted);">All students have 75%+ attendance</p></div>';
+        } else {
+            lowStudents.forEach(s => {
+                const color = getAvatarColor(s.name);
+                const barColor = s.pct >= 75 ? 'var(--success)' : s.pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+                html += `
+                    <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-hover);">
+                        <div class="avatar" style="background: ${color}22; color: ${color};">${getInitials(s.name)}</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">${toTitleCase(s.name)}</p>
+                            <p class="text-xs font-mono" style="color: var(--fg-muted);">${s.studentId}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold" style="color: ${barColor};">${s.pct}%</p>
+                            <div class="w-16 h-1.5 rounded-full mt-1" style="background: var(--bg);">
+                                <div class="h-full rounded-full" style="width: ${s.pct}%; background: ${barColor};"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+        container.innerHTML = html;
+    }
+
+    /* ============================
+       ATTENDANCE PAGE MODULE
+       ============================ */
+    /** Renders the attendance marking table for the selected date */
+    function renderAttendanceTable() {
+        const dateInput = document.getElementById('attDate');
+        if (!dateInput.value) dateInput.value = getTodayKey();
+        const dateKey = dateInput.value;
+
+        if (!attendanceRecords[dateKey]) attendanceRecords[dateKey] = {};
+        currentAttendance = { ...attendanceRecords[dateKey] };
+
+        const tbody = document.getElementById('attendanceTableBody');
+        let html = '';
+        students.forEach(s => {
+            const status = currentAttendance[s.id] || '';
+            const color = getAvatarColor(s.name);
+            html += `
+                <tr data-student-id="${s.id}">
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="avatar" style="background: ${color}22; color: ${color};">${getInitials(s.name)}</div>
+                            <div>
+                                <p class="font-medium text-sm">${toTitleCase(s.name)}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="text-sm font-mono" style="color: var(--accent);">${s.studentId}</span></td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="att-btn att-present ${status === 'present' ? 'selected' : ''}" onclick="markAttendance(${s.id}, 'present', this)">Hadir</button>
+                            <button class="att-btn att-absent ${status === 'absent' ? 'selected' : ''}" onclick="markAttendance(${s.id}, 'absent', this)">Tidak Hadir</button>
+                            <button class="att-btn att-late ${status === 'late' ? 'selected' : ''}" onclick="markAttendance(${s.id}, 'late', this)">Lewat</button>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" class="input-field" style="padding: 8px 12px; font-size: 12px; width: 140px;" placeholder="Add remark..." data-remark-id="${s.id}">
+                    </td>
+                </tr>`;
+        });
+        tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-8" style="color:var(--fg-muted);">No students found</td></tr>';
+    }
+
+    /**
+     * Marks attendance status for a student in the current session.
+     * @param {number} studentId - The student's ID
+     * @param {string} status - 'present', 'absent', or 'late'
+     * @param {HTMLElement} btn - The clicked button element
+     */
+    function markAttendance(studentId, status, btn) {
+        currentAttendance[studentId] = status;
+        const row = btn.closest('tr');
+        row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    /** Sets all students to 'present' for the current date */
+    function markAllPresent() {
+        students.forEach(s => { currentAttendance[s.id] = 'present'; });
+        document.querySelectorAll('#attendanceTableBody tr').forEach(row => {
+            const id = parseInt(row.dataset.studentId);
+            if (id) {
+                row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('selected'));
+                const presentBtn = row.querySelector('.att-present');
+                if (presentBtn) presentBtn.classList.add('selected');
+            }
+        });
+        showToast('Semua pelajar ditanda hadir', 'success');
+    }
+
+    /** Saves the current attendance session to the records object */
+    function saveAttendance() {
+        const dateKey = document.getElementById('attDate').value;
+        if (!dateKey) { showToast('Please select a date', 'error'); return; }
+        attendanceRecords[dateKey] = { ...currentAttendance };
+        showToast('Rekod kehadiran berjaya disimpan untuk ' + dateKey, 'success');
+        updateDashboard();
+    }
+
+    /* ============================
+       STUDENTS PAGE MODULE
+       ============================ */
+    /** Renders the student list table with search filtering */
+    function renderStudentList() {
+        const search = (document.getElementById('studentSearch').value || '').toLowerCase();
+        const filtered = students.filter(s => {
+            return s.name.toLowerCase().includes(search) || s.studentId.includes(search) || s.email.toLowerCase().includes(search);
+        });
+
+        const tbody = document.getElementById('studentTableBody');
+        let html = '';
+        filtered.forEach(s => {
+            const pct = getStudentAttendancePercentage(s.id);
+            const color = getAvatarColor(s.name);
+            const pctColor = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+            html += `
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="avatar" style="background: ${color}22; color: ${color};">${getInitials(s.name)}</div>
+                            <div>
+                                <p class="font-medium text-sm">${toTitleCase(s.name)}</p>
+                                <p class="text-xs" style="color: var(--fg-muted);">${s.phone || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="text-sm font-mono font-semibold" style="color: var(--accent);">${s.studentId}</span></td>
+                    <td><span class="text-sm" style="color: var(--fg-muted);">${s.email}</span></td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div class="w-16 h-2 rounded-full" style="background: var(--bg);">
+                                <div class="h-full rounded-full" style="width: ${pct}%; background: ${pctColor};"></div>
+                            </div>
+                            <span class="text-sm font-semibold" style="color: ${pctColor};">${pct}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary" style="padding: 6px 10px; font-size: 12px;" onclick="openStudentModal(${s.id})">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn-danger" style="padding: 6px 10px; font-size: 12px;" onclick="deleteStudent(${s.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+        tbody.innerHTML = html || '<tr><td colspan="5" class="text-center py-8" style="color:var(--fg-muted);">No students found</td></tr>';
+    }
+
+    /* ============================
+       STUDENT MODAL (Add/Edit)
+       ============================ */
+    /**
+     * Opens the modal dialog for adding or editing a student.
+     * @param {number|null} studentId - The student ID for editing, or null for adding
+     */
+    function openStudentModal(studentId = null) {
+        const isEdit = studentId !== null;
+        const student = isEdit ? students.find(s => s.id === studentId) : null;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'studentModal';
+        modal.innerHTML = `
+            <div class="modal-box">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-display text-lg font-bold">${isEdit ? 'Edit Student' : 'Add New Student'}</h3>
+                    <button onclick="closeStudentModal()" style="background:none; border:none; color: var(--fg-muted); cursor:pointer; font-size:18px;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Full Name <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="modalName" class="input-field" placeholder="e.g. AHMAD FARHAN BIN ISMAIL" value="${isEdit ? student.name : ''}" oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Student ID <span style="color: var(--danger);">*</span></label>
+                            <input type="text" id="modalStudentId" class="input-field" placeholder="2025XXXXXX" maxlength="10" value="${isEdit ? student.studentId : ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Course</label>
+                            <div class="input-field flex items-center gap-2" style="cursor: default; background: var(--bg-hover);">
+                                <i class="fa-solid fa-code text-xs" style="color: var(--accent);"></i>
+                                <span class="text-sm font-semibold" style="color: var(--accent);">IMS566</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Email <span style="color: var(--danger);">*</span></label>
+                        <input type="email" id="modalEmail" class="input-field" placeholder="student@uitm.edu.my" value="${isEdit ? student.email : ''}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--fg-muted);">Phone</label>
+                        <input type="tel" id="modalPhone" class="input-field" placeholder="01XXXXXXXX" value="${isEdit ? (student.phone || '') : ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="11">
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button class="btn-primary flex-1 justify-center" onclick="saveStudent(${isEdit ? studentId : 'null'})">
+                            <i class="fa-solid fa-check"></i> ${isEdit ? 'Update' : 'Add Student'}
+                        </button>
+                        <button class="btn-secondary" onclick="closeStudentModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>`;
+        document.getElementById('modalContainer').appendChild(modal);
+        setTimeout(() => document.getElementById('modalName').focus(), 100);
+    }
+
+    /** Closes the student add/edit modal */
+    function closeStudentModal() {
+        const modal = document.getElementById('studentModal');
+        if (modal) modal.remove();
+    }
+
+    /**
+     * Saves student data from the modal (insert or update).
+     * @param {number|null} studentId - The student ID for editing, or null for adding
+     */
+    function saveStudent(studentId) {
+        const name = document.getElementById('modalName').value.trim().toUpperCase();
+        const studentIdVal = document.getElementById('modalStudentId').value.trim();
+        const email = document.getElementById('modalEmail').value.trim();
+        const phone = document.getElementById('modalPhone').value.trim();
+
+        if (!name) { showToast('Please enter student name', 'error'); return; }
+        if (!/^2025\d{6}$/.test(studentIdVal)) { showToast('Student ID must start with 2025 and be 10 digits', 'error'); return; }
+        if (!email) { showToast('Please enter email', 'error'); return; }
+
+        const dupRoll = students.find(s => s.studentId === studentIdVal && s.id !== studentId);
+        if (dupRoll) { showToast('Student ID already exists', 'error'); return; }
+
+        if (studentId) {
+            const idx = students.findIndex(s => s.id === studentId);
+            if (idx !== -1) {
+                students[idx] = { ...students[idx], name, studentId: studentIdVal, email, phone };
+                showToast('Student updated successfully', 'success');
+            }
+        } else {
+            students.push({ id: nextStudentId++, name, studentId: studentIdVal, class: 'IMS566', email, phone });
+            showToast('Student added successfully', 'success');
+        }
+
+        closeStudentModal();
+        renderStudentList();
+        updateDashboard();
+    }
+
+    /**
+     * Opens a confirmation modal before deleting a student.
+     * @param {number} sId - The student ID to delete
+     */
+    function deleteStudent(sId) {
+        const student = students.find(s => s.id === sId);
+        if (!student) return;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'deleteModal';
+        modal.innerHTML = `
+            <div class="modal-box" style="max-width: 400px; text-align: center;">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background: rgba(248,113,113,0.12);">
+                    <i class="fa-solid fa-triangle-exclamation text-xl" style="color: var(--danger);"></i>
+                </div>
+                <h3 class="font-display text-lg font-bold mb-2">Delete Student</h3>
+                <p class="text-sm mb-6" style="color: var(--fg-muted);">Are you sure you want to remove <strong style="color: var(--fg);">${toTitleCase(student.name)}</strong>? This action cannot be undone.</p>
+                <div class="flex gap-3">
+                    <button class="btn-secondary flex-1 justify-center" onclick="closeDeleteModal()">Cancel</button>
+                    <button class="btn-primary flex-1 justify-center" style="background: var(--danger);" onclick="confirmDelete(${sId})">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>`;
+        document.getElementById('modalContainer').appendChild(modal);
+    }
+
+    /** Closes the delete confirmation modal */
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.remove();
+    }
+
+    /**
+     * Executes the deletion of a student after confirmation.
+     * @param {number} sId - The student ID to delete
+     */
+    function confirmDelete(sId) {
+        students = students.filter(s => s.id !== sId);
+        Object.keys(attendanceRecords).forEach(dateKey => { delete attendanceRecords[dateKey][sId]; });
+        registeredStudents = registeredStudents.filter(u => {
+            const student = students.find(s => s.studentId === u.studentId);
+            return !!student;
+        });
+        closeDeleteModal();
+        renderStudentList();
+        updateDashboard();
+        showToast('Student removed successfully', 'success');
+    }
+
+    /* ============================
+       INITIALIZATION
+       ============================ */
+    /** Initializes the application state, generates data, and renders initial view */
+    function initApp() {
+        generateHistoricalData();
+        document.getElementById('attDate').value = getTodayKey();
+        const todayKey = getTodayKey();
+        if (!attendanceRecords[todayKey]) attendanceRecords[todayKey] = {};
+        updateDashboard();
+        renderAttendanceTable();
+        renderStudentList();
+    }
+
+    // Global event listener for closing modals with Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeStudentModal(); closeDeleteModal(); }
+    });
+    </script>
+</body>
+</html>
